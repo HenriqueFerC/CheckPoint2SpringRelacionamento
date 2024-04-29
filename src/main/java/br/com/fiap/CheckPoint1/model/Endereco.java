@@ -39,13 +39,18 @@ public class Endereco {
     @Column(name="BAIRRO", length = 20, nullable = false)
     private String bairro;
 
-    public Endereco(CadastroEnderecoDto enderecoDto) {
+    @OneToOne
+    @JoinColumn(name="ID_FUNCIONARIO")
+    private Funcionario funcionario;
+
+    public Endereco(CadastroEnderecoDto enderecoDto, Funcionario funcionario) {
         pais = enderecoDto.pais();
         estado = enderecoDto.estado();
         cidade = enderecoDto.cidade();
         logradouro = enderecoDto.logradouro();
         cep = enderecoDto.cep();
         bairro = enderecoDto.bairro();
+        this.funcionario = funcionario;
     }
 
     public void atualizarEndereco(AtualizarEnderecoDto enderecoDto){

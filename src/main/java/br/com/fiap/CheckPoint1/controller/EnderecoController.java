@@ -6,6 +6,7 @@ import br.com.fiap.CheckPoint1.dto.endereco.DetalhesEnderecoDto;
 import br.com.fiap.CheckPoint1.dto.endereco.ListagemEnderecoDto;
 import br.com.fiap.CheckPoint1.model.Endereco;
 import br.com.fiap.CheckPoint1.repository.EnderecoRepository;
+import br.com.fiap.CheckPoint1.repository.FuncionarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -23,19 +24,24 @@ public class EnderecoController {
     @Autowired
     private EnderecoRepository enderecoRepository;
 
-    @PostMapping
-    @Transactional
-    public ResponseEntity<DetalhesEnderecoDto> cadastrar(@RequestBody CadastroEnderecoDto enderecoDto, UriComponentsBuilder uriBuilder){
-        var endereco = new Endereco(enderecoDto);
-        enderecoRepository.save(endereco);
-        var url =uriBuilder.path("endereco/{id}").buildAndExpand(endereco.getId()).toUri();
-        return ResponseEntity.created(url).body(new DetalhesEnderecoDto(endereco));
-    }
+    @Autowired
+    private FuncionarioRepository funcionarioRepository;
 
-    @DeleteMapping("{id}")
+//    @PostMapping
+//    @Transactional
+//    public ResponseEntity<DetalhesEnderecoDto> cadastrar(@RequestBody CadastroEnderecoDto enderecoDto, UriComponentsBuilder uriBuilder){
+//        var endereco = new Endereco(enderecoDto);
+//        enderecoRepository.save(endereco);
+//        var url =uriBuilder.path("endereco/{id}").buildAndExpand(endereco.getId()).toUri();
+//        return ResponseEntity.created(url).body(new DetalhesEnderecoDto(endereco));
+//    }
+
+    @DeleteMapping("{id}/funcionario/{idFuncionario}")
     @Transactional
-    public ResponseEntity<Void> deletar(@PathVariable("id") Long id){
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id, @PathVariable("idFuncionario") Long idFuncionario){
         try {
+            var funcionario = funcionarioRepository.getReferenceById(idFuncionario);
+            funcionario.setEndereco(null);
             enderecoRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         }catch (EmptyResultDataAccessException e){

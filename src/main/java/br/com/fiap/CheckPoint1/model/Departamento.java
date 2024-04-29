@@ -24,8 +24,13 @@ public class Departamento {
     @Enumerated(EnumType.STRING)
     private TipoDepartamento tipo;
 
-    public Departamento(CadastroDepartamentoDto departamentoDto){
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="ID_EMPRESA")
+    private Empresa empresa;
+
+    public Departamento(CadastroDepartamentoDto departamentoDto, Empresa empresa){
         tipo = departamentoDto.tipo();
+        this.empresa = empresa;
     }
 
     public void atualizarDepartamento(AtualizarDepartamentoDto departamentoDto){

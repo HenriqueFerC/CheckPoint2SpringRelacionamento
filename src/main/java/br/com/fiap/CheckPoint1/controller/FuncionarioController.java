@@ -1,10 +1,16 @@
 package br.com.fiap.CheckPoint1.controller;
 
+import br.com.fiap.CheckPoint1.dto.endereco.CadastroEnderecoDto;
+import br.com.fiap.CheckPoint1.dto.endereco.DetalhesEnderecoDto;
 import br.com.fiap.CheckPoint1.dto.funcionario.AtualizarFuncionarioDto;
 import br.com.fiap.CheckPoint1.dto.funcionario.CadastrarFuncionarioDto;
 import br.com.fiap.CheckPoint1.dto.funcionario.DetalhesFuncionarioDto;
 import br.com.fiap.CheckPoint1.dto.funcionario.ListagemFuncionarioDto;
+import br.com.fiap.CheckPoint1.model.Endereco;
 import br.com.fiap.CheckPoint1.model.Funcionario;
+import br.com.fiap.CheckPoint1.repository.ClienteRepository;
+import br.com.fiap.CheckPoint1.repository.EmpresaRepository;
+import br.com.fiap.CheckPoint1.repository.EnderecoRepository;
 import br.com.fiap.CheckPoint1.repository.FuncionarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,20 +29,67 @@ public class FuncionarioController {
     @Autowired
     private FuncionarioRepository funcionarioRepository;
 
-    @PostMapping
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private EnderecoRepository enderecoRepository;
+
+//    @PostMapping
+//    @Transactional
+//    public ResponseEntity<DetalhesFuncionarioDto> cadastrar(@RequestBody CadastrarFuncionarioDto funcionarioDto, UriComponentsBuilder uriBulder){
+//        var funcionario = new Funcionario(funcionarioDto);
+//        funcionarioRepository.save(funcionario);
+//        var url = uriBulder.path("funcionarios/{id}").buildAndExpand(funcionario.getId()).toUri();
+//        return ResponseEntity.created(url).body(new DetalhesFuncionarioDto(funcionario));
+//    }
+
+
+    @PostMapping("{id}/endereco")
     @Transactional
-    public ResponseEntity<DetalhesFuncionarioDto> cadastrar(@RequestBody CadastrarFuncionarioDto funcionarioDto, UriComponentsBuilder uriBulder){
-        var funcionario = new Funcionario(funcionarioDto);
-        funcionarioRepository.save(funcionario);
-        var url = uriBulder.path("funcionarios/{id}").buildAndExpand(funcionario.getId()).toUri();
+    public ResponseEntity<DetalhesEnderecoDto> cadastrarEndereco(@PathVariable("id") Long id, @RequestBody CadastroEnderecoDto enderecoDto, UriComponentsBuilder uriBuilder){
+        var funcionario = funcionarioRepository.getReferenceById(id);
+        var endereco = new Endereco(enderecoDto, funcionario);
+        enderecoRepository.save(endereco);
+        var url = uriBuilder.path("enderecos/{id}").buildAndExpand(endereco.getId()).toUri();
+        return ResponseEntity.created(url).body(new DetalhesEnderecoDto(endereco));
+    }
+
+    @PostMapping("{idFuncionario}/clientes/{idCliente}")
+    @Transactional
+    public ResponseEntity<DetalhesFuncionarioDto> casastrarFuncCliente(@PathVariable("idFuncionario") Long idFuncioraio, @PathVariable("idCliente") Long idCliente, UriComponentsBuilder uriBuilder){
+        var funcionario = funcionarioRepository.getReferenceById(idFuncioraio);
+        var cliente = clienteRepository.getReferenceById(idCliente);
+        funcionario.atualizarFuncCliente(cliente);
+        cliente.atualizarClienteFunc(funcionario);
+        var url = uriBuilder.path("{idFuncionario}/clientes/{idClientes}").buildAndExpand(funcionario.getId(), cliente.getId()).toUri();
         return ResponseEntity.created(url).body(new DetalhesFuncionarioDto(funcionario));
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("{id}/empresa/{idEmpresa}")
     @Transactional
-    public ResponseEntity<Void> deletar(@PathVariable("id") Long id){
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id, @PathVariable("idEmpresa") Long idEmpresa){
         try {
+            var funcionario = funcionarioRepository.getReferenceById(id);
+            var empresa = empresaRepository.getReferenceById(idEmpresa);
+            empresa.removarFuncionario(funcionario);
             funcionarioRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (EmptyResultDataAccessException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("{id}/endereco/{idEndereco}")
+    @Transactional
+    public ResponseEntity<Void> deletarEndereco(@PathVariable("id")Long id, @PathVariable("idEndereco") Long idEndereco){
+        try {
+            var funcionario = funcionarioRepository.getReferenceById(id);
+            funcionario.setEndereco(null);
+            enderecoRepository.deleteById(idEndereco);
             return ResponseEntity.noContent().build();
         } catch (EmptyResultDataAccessException e){
             return ResponseEntity.notFound().build();
@@ -47,7 +100,7 @@ public class FuncionarioController {
     @Transactional
     public ResponseEntity<DetalhesFuncionarioDto> atualizar(@PathVariable("id") Long id, @RequestBody AtualizarFuncionarioDto funcionarioDto){
         var funcionario = funcionarioRepository.getReferenceById(id);
-        funcionario.atualizarFucnionario(funcionarioDto);
+        funcionario.atualizarFuncionario(funcionarioDto);
         return ResponseEntity.ok(new DetalhesFuncionarioDto(funcionario));
     }
 

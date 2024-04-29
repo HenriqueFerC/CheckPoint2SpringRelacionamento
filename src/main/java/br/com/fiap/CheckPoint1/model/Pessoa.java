@@ -11,8 +11,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+
+@MappedSuperclass
 public abstract class Pessoa {
 
     @Id
@@ -25,10 +25,6 @@ public abstract class Pessoa {
 
     @Column(name="IDADE", length = 3, nullable = false)
     protected int idade;
-
-    //@OneToOne(cascade = CascadeType.ALL)
-    //@JoinColumn(name="ID_ENDERECO")
-    //protected Endereco endereco;
 
     @Column(name="CPF", length = 14, nullable = false)
     protected String cpf;

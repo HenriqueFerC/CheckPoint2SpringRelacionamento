@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings("JpaAttributeTypeInspection")
 @Getter @Setter
 @NoArgsConstructor
@@ -30,13 +33,11 @@ public class Empresa {
     @Enumerated(EnumType.STRING)
     private TipoEmpresa tipo;
 
-//    @OneToMany
-//    @JoinColumn(name="ID_DEPARTAMENTO")
-//    private Departamento departamento;
-//
-//    @OneToMany
-//    @JoinColumn(name="ID_FUNCIONARIO")
-//    private Funcionario funcionario;
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Departamento> departamentos;
+
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Funcionario> funcionarios = new ArrayList<>();
 
     public Empresa(CadastroEmpresaDto empresaDto){
         nome = empresaDto.nome();
@@ -50,6 +51,24 @@ public class Empresa {
         nome = empresaDto.nome();
         cnpj = empresaDto.cnpj();
         tipo = empresaDto.tipo();
+    }
+
+    public void adicionarFuncionaro(Funcionario funcionarioNovo){
+        funcionarioNovo.setEmpresa(this);
+        funcionarios.add(funcionarioNovo);
+    }
+
+    public void adicionarDepartamento(Departamento departamentoNovo){
+        departamentoNovo.setEmpresa(this);
+        departamentos.add(departamentoNovo);
+    }
+
+    public void removerDepartamento(Departamento departamento){
+        departamentos.remove(departamento);
+    }
+
+    public void removarFuncionario(Funcionario funcionario){
+        funcionarios.remove(funcionario);
     }
 
 }
